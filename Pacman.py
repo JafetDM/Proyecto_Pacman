@@ -1,0 +1,3 @@
+#Proyecto Pacman
+
+import pygame
