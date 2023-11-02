@@ -21,7 +21,6 @@ level = matriz
 def get_font(size): #obtener la fuente de letra
     return pygame.font.SysFont("Impact", size)
 
-
 #clase boton para la interfaz
 class Button():
     #iniciar atributos
@@ -56,14 +55,16 @@ class Button():
         else:
             self.text = self.font.render(self.text_input, True, self.color_base)
 
-
-
 #ventana principal
 ancho = 1280
 largo = 720
 ventana = pygame.display.set_mode([ancho, largo]) #ventana
 pygame.display.set_caption("Pac-Man") # Título
 fondo= pygame.image.load("fondo_negro.png")
+
+#imagenes
+jose_foto = pygame.image.load("jose_foto.jpg")
+jafet_foto = pygame.image.load("jafet_foto.png")
 
 def jugar():
     pygame.display.set_caption("Juego") #ventana del juego
@@ -101,12 +102,48 @@ def ayuda():
         ayuda_mouse_pos = pygame.mouse.get_pos()
 
         ventana.fill(negro)
-
-        ayuda_text= get_font(45).render("Pantalla de ayuda", True, blanco)
-        ayuda_rect = ayuda_text.get_rect(center= (640, 260))
+#titulo
+        ayuda_text= get_font(75).render("Pantalla de ayuda", True, amarillo)
+        ayuda_rect = ayuda_text.get_rect(center= (640, 100))
         ventana.blit(ayuda_text, ayuda_rect)
 
-        ayuda_back = Button(imagen=None, pos=(640, 460), text_input= "Volver", font= get_font(75), color_base= negro, hovering_color= amarillo)
+        # info del juego
+        info_juego_text = get_font(50).render("Historia del juego:", True, blanco)
+        info_juego_rect = info_juego_text.get_rect(center=(640, 200))
+        ventana.blit(info_juego_text, info_juego_rect)
+
+        info_juego_text1 = get_font(25).render(
+            "PacMan es un videojuego arcade creado por el diseñador de videojuegos Toru Iwatani de la empresa Namco",
+            True, blanco)
+        info_juego_rect1 = info_juego_text1.get_rect(center=(640, 250))
+        ventana.blit(info_juego_text1, info_juego_rect1)
+
+        info_juego_text2 = get_font(25).render(
+            "distribuido por Midway Gams al mercado estadounidense a principios de los años 1980",
+            True, blanco)
+        info_juego_rect2 = info_juego_text2.get_rect(center=(640, 300))
+        ventana.blit(info_juego_text2, info_juego_rect2)
+
+        # info controles
+        info_controles_text = get_font(50).render(
+            "Como jugar:",
+            True, blanco)
+        info_controles_rect = info_controles_text.get_rect(center=(640, 400))
+        ventana.blit(info_controles_text, info_controles_rect)
+
+        info_controles_text1 = get_font(25).render(
+            "W: arriba, A: izquierda, S: abajo, D: derecha",
+            True, blanco)
+        info_controles_rect1 = info_controles_text1.get_rect(center=(640, 450))
+        ventana.blit(info_controles_text1, info_controles_rect1)
+
+        info_controles_text2 = get_font(25).render(
+            "¡Para ganar cómete todo el alimento (puntos blancos) antes de que te coman a ti!",
+            True, blanco)
+        info_controles_rect2 = info_controles_text2.get_rect(center=(640, 500))
+        ventana.blit(info_controles_text2, info_controles_rect2)
+
+        ayuda_back = Button(imagen=None, pos=(640, 600), text_input= "Volver", font= get_font(75), color_base= blanco, hovering_color= amarillo)
 
         ayuda_back.changeColor(ayuda_mouse_pos)
         ayuda_back.update(ventana)
@@ -117,6 +154,56 @@ def ayuda():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if ayuda_back.checkForInput(ayuda_mouse_pos):
+                    menu_principal()
+
+        pygame.display.update()
+
+def acerca_de():
+    pygame.display.set_caption("Acerca de") #ventana del juego
+
+    while True:
+
+        acerca_mouse_pos = pygame.mouse.get_pos() #obtener posición mouse
+
+        ventana.fill(negro) #cubrir ventana de negro
+
+#fotos programadores
+        ventana.blit(jose_foto, (300, 350))
+        ventana.blit(jafet_foto, (775, 350))
+
+# título
+        acerca_text = get_font(75).render("Acerca de", True, amarillo)
+        acerca_rect = acerca_text.get_rect(center=(640, 100))
+        ventana.blit(acerca_text, acerca_rect)
+
+#info jafet
+        jafet_text = get_font(30).render("Programador: Jafet Díaz Morales, ID: 1 1929 0996, carnet: 2023053249", True,blanco)
+        jafet_rect = jafet_text.get_rect(center=(640, 200))
+        ventana.blit(jafet_text, jafet_rect)
+
+# info jose
+        jose_text = get_font(30).render("Programador: Jose Luis Vargas, ID: 2 0868 0247, carnet: 2023058736", True,
+                                         blanco)
+        jose_rect = jose_text.get_rect(center=(640, 250))
+        ventana.blit(jose_text, jose_rect)
+
+        # info general
+        general_text = get_font(30).render("ITCR, Introducción a la programación, CE, 2023, "
+                                         "Profesor: Jeff Schidt Peralta, Costa Rica, Python 3.11", True, blanco)
+        general_rect = general_text.get_rect(center=(640, 300))
+        ventana.blit(general_text, general_rect)
+
+        ayuda_back = Button(imagen=None, pos=(640, 600), text_input= "Volver", font= get_font(75), color_base= blanco, hovering_color= amarillo)
+
+        ayuda_back.changeColor(acerca_mouse_pos)
+        ayuda_back.update(ventana)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if ayuda_back.checkForInput(acerca_mouse_pos):
                     menu_principal()
 
         pygame.display.update()
@@ -136,10 +223,12 @@ def menu_principal(): #ventana del menú principal
 #botones
         boton_jugar = Button(imagen=None, pos=(640,250), text_input= "Jugar", font=get_font(75), color_base= blanco, hovering_color = amarillo)
         boton_ayuda = Button(imagen=None, pos=(640, 350), text_input="Ayuda", font=get_font(75), color_base=blanco, hovering_color = amarillo)
+        boton_acerca= Button(imagen=None, pos=(640, 450), text_input="Acerca de", font=get_font(75), color_base=blanco,
+                             hovering_color=amarillo)
 
         ventana.blit(menu_text, menu_rect)
 
-        for button in [boton_jugar, boton_ayuda]:
+        for button in [boton_jugar, boton_ayuda, boton_acerca]:
             button.changeColor(menu_mouse_pos)
             button.update(ventana)
 
@@ -154,6 +243,8 @@ def menu_principal(): #ventana del menú principal
                         jugar()
                     if boton_ayuda.checkForInput(menu_mouse_pos):
                         ayuda()
+                    if boton_acerca.checkForInput(menu_mouse_pos):
+                        acerca_de()
 
 
         pygame.display.update()
