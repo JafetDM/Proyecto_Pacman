@@ -208,6 +208,37 @@ def acerca_de():
 
         pygame.display.update()
 
+def salon():
+    pygame.display.set_caption("Salón de la fama") #ventana del juego
+
+    while True:
+
+        salon_mouse_pos = pygame.mouse.get_pos() #obtener posición mouse
+
+        ventana.fill(negro) #cubrir ventana de negro
+
+
+# título
+        salon_text = get_font(75).render("Salón de la Fama", True, amarillo)
+        salon_rect = salon_text.get_rect(center=(640, 100))
+        ventana.blit(salon_text, salon_rect)
+
+#botón para volver
+        salon_back = Button(imagen=None, pos=(640, 600), text_input= "Volver", font= get_font(75), color_base= blanco, hovering_color= amarillo)
+
+        salon_back.changeColor(salon_mouse_pos)
+        salon_back.update(ventana)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if salon_back.checkForInput(salon_mouse_pos):
+                    menu_principal()
+
+        pygame.display.update()
+
 def menu_principal(): #ventana del menú principal
     pygame.display.set_caption("Menú")
 
@@ -217,7 +248,7 @@ def menu_principal(): #ventana del menú principal
         menu_mouse_pos = pygame.mouse.get_pos() #obtener la posición del mouse
 
         #poner texto
-        menu_text = get_font(100).render("Menú Principal", True, amarillo)
+        menu_text = get_font(100).render("PacMan", True, amarillo)
         menu_rect= menu_text.get_rect(center= (640, 100))
 
 #botones
@@ -225,10 +256,12 @@ def menu_principal(): #ventana del menú principal
         boton_ayuda = Button(imagen=None, pos=(640, 350), text_input="Ayuda", font=get_font(75), color_base=blanco, hovering_color = amarillo)
         boton_acerca= Button(imagen=None, pos=(640, 450), text_input="Acerca de", font=get_font(75), color_base=blanco,
                              hovering_color=amarillo)
+        boton_salon = Button(imagen=None, pos=(640, 550), text_input="Salón de la Fama", font=get_font(75), color_base=blanco,
+                              hovering_color=amarillo)
 
         ventana.blit(menu_text, menu_rect)
 
-        for button in [boton_jugar, boton_ayuda, boton_acerca]:
+        for button in [boton_jugar, boton_ayuda, boton_acerca, boton_salon]:
             button.changeColor(menu_mouse_pos)
             button.update(ventana)
 
@@ -245,6 +278,8 @@ def menu_principal(): #ventana del menú principal
                         ayuda()
                     if boton_acerca.checkForInput(menu_mouse_pos):
                         acerca_de()
+                    if boton_salon.checkForInput(menu_mouse_pos):
+                        salon()
 
 
         pygame.display.update()
