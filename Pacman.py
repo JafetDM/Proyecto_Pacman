@@ -30,6 +30,11 @@ jafet_foto = pygame.image.load("jafet_foto.png")
 def get_font(size): #obtener la fuente de letra
     return pygame.font.SysFont("Impact", size)
 
+def mostrar_texto(ventana, fuente, texto, color,  x, y):
+    superficie = fuente.render(texto, True, color)
+    rectangulo = superficie.get_rect(center=(x, y))
+    ventana.blit(superficie, rectangulo)
+
 #clase boton para la interfaz
 class Button():
     #iniciar atributos
@@ -73,11 +78,11 @@ class Juego():
     # 4) score
 
     #métodos: iniciar juego
-    def __init__(self, num_juego, nivel, score):
+    def __init__(self, num_juego, nivel):
         self.num_juego = num_juego #consecutivo del juego, cada que termina se actualiza
         self.tablero = matriz #será una matriz 40x36, se actualiza en tiempo real. Proviene de Matriz.py
         self.nivel = nivel #de 1 a 2, inicia en 1
-        self.score = score #inicia en 0, esquema de puntos definido por alimento (puntos y fruta) y fantasmas comidos
+        self.score = 0 #inicia en 0, esquema de puntos definido por alimento (puntos y fruta) y fantasmas comidos
 
     def iniciar(self):
         num1 = (largo-25) // 36
@@ -98,11 +103,12 @@ class Juego():
                 if self.tablero[i][j] == 5: #dibuja una linea que sirve como la puerta para los fantasmas, posicion inicial y final y width
                     pygame.draw.line(ventana, blanco, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)),
                                      (j * num2 + (0.5 * num2) + 18, i * num1 + (0.5 * num1)), 4)
-
+    def get_score(self): #retorna score
+        return (self.score)
 
 # instancias de juego
-niv1 = Juego(1, 1, 0)
-niv2 = Juego(1, 2, 0)
+niv1 = Juego(1, 1)
+niv2 = Juego(1, 2)
 
 def jugar():
     pygame.display.set_caption("Juego") #ventana del juego
@@ -118,9 +124,12 @@ def jugar():
 
         ventana.fill(negro)
         niv1.iniciar()
+        score1= niv1.get_score()
+        mostrar_texto(ventana, get_font(45), str(score1), blanco, 1000, 110)
+
 
         jugar_text= get_font(45).render("Puntaje", True, rosado)
-        jugar_rect = jugar_text.get_rect(center= (1000, 260))
+        jugar_rect = jugar_text.get_rect(center= (1000, 50))
         ventana.blit(jugar_text, jugar_rect)
 
         jugar_back = Button(imagen=None, pos=(1000, 460), text_input= "Volver", font= get_font(75), color_base= blanco, hovering_color= amarillo)
@@ -267,6 +276,12 @@ def salon():
         salon_rect = salon_text.get_rect(center=(640, 100))
         ventana.blit(salon_text, salon_rect)
 
+#putnajes
+        puntajes_text = get_font(25).render(contenido_actualizado, True, amarillo)
+        puntajes_rect = puntajes_text.get_rect(center=(640, 300))
+        ventana.blit(puntajes_text, puntajes_rect)
+
+
 #botón para volver
         salon_back = Button(imagen=None, pos=(640, 600), text_input= "Volver", font= get_font(75), color_base= blanco, hovering_color= amarillo)
 
@@ -331,4 +346,44 @@ def menu_principal(): #ventana del menú principal
 
 menu_principal()
 
+
+
+def obtener_enteros_impares(lineas, indice=1, lista_enteros=None):
+    if lista_enteros is None:
+        lista_enteros = []
+
+    if indice < len(lineas):
+        # Convierte la línea en un entero y agrega a la lista
+        lista_enteros.append(int(lineas[indice]))
+        # Llama recursivamente a la función con el siguiente índice impar
+        obtener_enteros_impares(lineas, indice + 2, lista_enteros)
+
+    return lista_enteros
+
+with open("puntajes_pacman.txt", "r") as archivo:
+    lineas = archivo.read().splitlines()  # obtiene lista
+
+lista_enteros = obtener_enteros_impares(lineas)
+menor = min(lista_enteros)  # obtiene el menor
+posicion_menor = lista_enteros.index(menor)  # obtiene su posición
+
+if len(lineas) > 6:
+
+    if posicion_menor ==0:
+        # Elimina el número menor y su antecesor de la lista original
+        del lineas[posicion_menor: posicion_menor + 2]
+
+    if posicion_menor == 1:
+        # Elimina el número menor y su antecesor de la lista original
+        del lineas[posicion_menor+1: posicion_menor + 3]
+
+    if posicion_menor == 2:
+        # Elimina el número menor y su antecesor de la lista original
+        del lineas[posicion_menor+2: posicion_menor + 4]
+
+# Abre el archivo en modo escritura y escribe el contenido actualizado
+with open("archivo_puntajes.txt", "w") as archivo:
+    archivo.write("\n".join(lineas))
+
+contenido_actualizado = "\n".join(lineas)
 
