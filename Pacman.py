@@ -15,6 +15,17 @@ celeste = (135, 206, 235)
 rosado =(255, 182, 193)
 naranja= (255, 128, 0)
 
+#ventana principal
+ancho = 1280
+largo = 720
+ventana = pygame.display.set_mode([ancho, largo]) #ventana
+pygame.display.set_caption("Pac-Man") # Título
+fondo= pygame.image.load("fondo_negro.png")
+
+#imagenes
+jose_foto = pygame.image.load("jose_foto.jpg")
+jafet_foto = pygame.image.load("jafet_foto.png")
+
 #fuente
 def get_font(size): #obtener la fuente de letra
     return pygame.font.SysFont("Impact", size)
@@ -68,46 +79,30 @@ class Juego():
         self.nivel = nivel #de 1 a 2, inicia en 1
         self.score = score #inicia en 0, esquema de puntos definido por alimento (puntos y fruta) y fantasmas comidos
 
-    def iniciar(self): #metodo que inicia el juego dibujando la matriz
-        num1 = (largo) // 36
+    def iniciar(self):
+        num1 = (largo-25) // 36
         num2 = (ancho - 560) // 40
         for i in range(len(self.tablero)):
             for j in range(len(self.tablero[i])):
-                if self.tablero[i][j] == 0:# dibuja el rectangulo horizontal, (posición x, posición y, largo, ancho)
-                    pygame.draw.rect(ventana, azul, (j * num2 + (0.5 * num2), i * num1 , 18, 4))
+                if self.tablero[i][j] == 0:
+                    pygame.draw.rect(ventana, azul, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1), 18,
+                                                     20))  # dibuja el rectangulo, (posición x, posición y, largo, ancho)
+                if self.tablero[i][j] == 1:
+                    pygame.draw.circle(ventana, blanco, (j * num2 + (num2), i * num1 + (num1)),
+                                       1)  # dibuja círculos, (coordenadas del centro del círculo, radio
+                if self.tablero[i][j] == 2:
+                    pygame.draw.circle(ventana, blanco, (j * num2 + (num2), i * num1 + (num1)), 5)
+                if self.tablero[i][j] == 3:
+                    pygame.draw.circle(ventana, rojo, (j * num2 + (num2), i * num1 + (num1)), 4)
 
-                if self.tablero[i][j] == 1:# dibuja círculos, (coordenadas del centro del círculo, radio
-                    pygame.draw.circle(ventana, blanco, (j * num2 + (num2), i * num1 ),1)
-
-                if self.tablero[i][j] == 2: #dibuja punto grande , circulo blanco
-                    pygame.draw.circle(ventana, blanco, (j * num2 + (0.5 * num2), i * num1), 4)
-
-                if self.tablero[i][j] == 3: #dibuja fruta (circulo pero mas grande y rojo)
-                    pygame.draw.circle(ventana, rojo, (j * num2 + (0.5 * num2), i * num1), 7)
-
-                if self.tablero[i][j] == 5: #dibuja puerta de fantasmas
-                    pygame.draw.line(ventana, blanco, (j * num2 + (0.5 * num2), i * num1),
-                                     (j * num2 + (0.5 * num2) +18, i * num1), 4)
-
-                if self.tablero[i][j] == 6:# dibuja el rectangulo vertical, (posición x, posición y, largo, ancho)
-                    pygame.draw.rect(ventana, azul, (j * num2 + (0.5 * num2), i * num1 , 4, 20))
+                if self.tablero[i][j] == 5: #dibuja una linea que sirve como la puerta para los fantasmas, posicion inicial y final y width
+                    pygame.draw.line(ventana, blanco, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)),
+                                     (j * num2 + (0.5 * num2) + 18, i * num1 + (0.5 * num1)), 4)
 
 
-#instancias de juego
-niv1=Juego(1, 1,0)
-niv2=Juego(1, 2, 0)
-
-#ventana principal
-ancho = 1280
-largo = 720
-ventana = pygame.display.set_mode([ancho, largo+10]) #ventana
-pygame.display.set_caption("Pac-Man") # Título
-fondo= pygame.image.load("fondo_negro.png")
-
-#imagenes
-jose_foto = pygame.image.load("jose_foto.jpg")
-jafet_foto = pygame.image.load("jafet_foto.png")
-
+# instancias de juego
+niv1 = Juego(1, 1, 0)
+niv2 = Juego(1, 2, 0)
 
 def jugar():
     pygame.display.set_caption("Juego") #ventana del juego
