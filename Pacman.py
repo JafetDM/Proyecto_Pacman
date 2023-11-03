@@ -15,8 +15,6 @@ celeste = (135, 206, 235)
 rosado =(255, 182, 193)
 naranja= (255, 128, 0)
 
-level = matriz
-
 #fuente
 def get_font(size): #obtener la fuente de letra
     return pygame.font.SysFont("Impact", size)
@@ -55,6 +53,33 @@ class Button():
         else:
             self.text = self.font.render(self.text_input, True, self.color_base)
 
+#clase Juego
+class Juego():
+    def __init__(self, num_juego, nivel, score):
+        self.num_juego = num_juego #consecutivo del juego, cada que termina se actualiza
+        self.tablero = matriz #será una matriz 40x36, se actualiza en tiempo real. Valor de mariz en Matriz.py
+        self.nivel = nivel #de 1 a 2, inicia en 1
+        self.score = score #inicia en 0, esquema de puntos definido por alimento (puntos y fruta) y fantasmas comidos
+
+    def iniciar(self):
+        num1 = (largo) // 36
+        num2 = (ancho - 560) // 40
+        for i in range(len(self.tablero)):
+            for j in range(len(self.tablero[i])):
+                if self.tablero[i][j] == 0:
+                    pygame.draw.rect(ventana, azul, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1), 18,
+                                                     20))  # dibuja el rectangulo, (posición x, posición y, largo, ancho)
+                if self.tablero[i][j] == 1:
+                    pygame.draw.circle(ventana, blanco, (j * num2 + (num2), i * num1 + (num1)),
+                                       4)  # dibuja círculos, (coordenadas del centro del círculo, radio
+                if self.tablero[i][j] == 2:
+                    pygame.draw.circle(ventana, blanco, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)), 10)
+                if self.tablero[i][j] == 3:
+                    pygame.draw.circle(ventana, rojo, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)), 7)
+#instancias de juego
+niv1=Juego(1, 1,0)
+niv2=Juego(1, 2, 0)
+
 #ventana principal
 ancho = 1280
 largo = 720
@@ -66,20 +91,27 @@ fondo= pygame.image.load("fondo_negro.png")
 jose_foto = pygame.image.load("jose_foto.jpg")
 jafet_foto = pygame.image.load("jafet_foto.png")
 
+
 def jugar():
     pygame.display.set_caption("Juego") #ventana del juego
+
+    #poner música
+    pygame.mixer.init()
+    pygame.mixer.music.load("01. Game Start.mp3")
+    pygame.mixer.music.play()
 
     while True:
 
         jugar_mouse_pos = pygame.mouse.get_pos()
 
         ventana.fill(negro)
+        niv1.iniciar()
 
-        jugar_text= get_font(45).render("Pantalla de juego", True, negro)
-        jugar_rect = jugar_text.get_rect(center= (640, 260))
+        jugar_text= get_font(45).render("Puntaje", True, rosado)
+        jugar_rect = jugar_text.get_rect(center= (1000, 260))
         ventana.blit(jugar_text, jugar_rect)
 
-        jugar_back = Button(imagen=None, pos=(640, 460), text_input= "Volver", font= get_font(75), color_base= blanco, hovering_color= amarillo)
+        jugar_back = Button(imagen=None, pos=(1000, 460), text_input= "Volver", font= get_font(75), color_base= blanco, hovering_color= amarillo)
 
         jugar_back.changeColor(jugar_mouse_pos)
         jugar_back.update(ventana)
@@ -91,6 +123,7 @@ def jugar():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if jugar_back.checkForInput(jugar_mouse_pos):
                     menu_principal()
+                    pygame.mixer.music.stop()
 
         pygame.display.update()
 
