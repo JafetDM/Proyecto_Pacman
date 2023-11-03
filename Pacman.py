@@ -55,27 +55,44 @@ class Button():
 
 #clase Juego
 class Juego():
+    # Atributos: 1) Número de juego,
+    # 2) tablero (matriz 40x36) sus valores son
+    # 0: pared horizontal, 1: puntos, 2: cápsula de poder,3: frutas, 4: espacio vacío, 5: puerta fantasma, 6: pared vertical
+    # 3) nivel (1 y 2)
+    # 4) score
+
+    #métodos: iniciar juego
     def __init__(self, num_juego, nivel, score):
         self.num_juego = num_juego #consecutivo del juego, cada que termina se actualiza
-        self.tablero = matriz #será una matriz 40x36, se actualiza en tiempo real. Valor de mariz en Matriz.py
+        self.tablero = matriz #será una matriz 40x36, se actualiza en tiempo real. Proviene de Matriz.py
         self.nivel = nivel #de 1 a 2, inicia en 1
         self.score = score #inicia en 0, esquema de puntos definido por alimento (puntos y fruta) y fantasmas comidos
 
-    def iniciar(self):
+    def iniciar(self): #metodo que inicia el juego dibujando la matriz
         num1 = (largo) // 36
         num2 = (ancho - 560) // 40
         for i in range(len(self.tablero)):
             for j in range(len(self.tablero[i])):
-                if self.tablero[i][j] == 0:
-                    pygame.draw.rect(ventana, azul, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1), 18,
-                                                     20))  # dibuja el rectangulo, (posición x, posición y, largo, ancho)
-                if self.tablero[i][j] == 1:
-                    pygame.draw.circle(ventana, blanco, (j * num2 + (num2), i * num1 + (num1)),
-                                       4)  # dibuja círculos, (coordenadas del centro del círculo, radio
-                if self.tablero[i][j] == 2:
-                    pygame.draw.circle(ventana, blanco, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)), 10)
-                if self.tablero[i][j] == 3:
-                    pygame.draw.circle(ventana, rojo, (j * num2 + (0.5 * num2), i * num1 + (0.5 * num1)), 7)
+                if self.tablero[i][j] == 0:# dibuja el rectangulo horizontal, (posición x, posición y, largo, ancho)
+                    pygame.draw.rect(ventana, azul, (j * num2 + (0.5 * num2), i * num1 , 18, 4))
+
+                if self.tablero[i][j] == 1:# dibuja círculos, (coordenadas del centro del círculo, radio
+                    pygame.draw.circle(ventana, blanco, (j * num2 + (num2), i * num1 ),1)
+
+                if self.tablero[i][j] == 2: #dibuja punto grande , circulo blanco
+                    pygame.draw.circle(ventana, blanco, (j * num2 + (0.5 * num2), i * num1), 4)
+
+                if self.tablero[i][j] == 3: #dibuja fruta (circulo pero mas grande y rojo)
+                    pygame.draw.circle(ventana, rojo, (j * num2 + (0.5 * num2), i * num1), 7)
+
+                if self.tablero[i][j] == 5: #dibuja puerta de fantasmas
+                    pygame.draw.line(ventana, blanco, (j * num2 + (0.5 * num2), i * num1),
+                                     (j * num2 + (0.5 * num2) +18, i * num1), 4)
+
+                if self.tablero[i][j] == 6:# dibuja el rectangulo vertical, (posición x, posición y, largo, ancho)
+                    pygame.draw.rect(ventana, azul, (j * num2 + (0.5 * num2), i * num1 , 4, 20))
+
+
 #instancias de juego
 niv1=Juego(1, 1,0)
 niv2=Juego(1, 2, 0)
@@ -83,7 +100,7 @@ niv2=Juego(1, 2, 0)
 #ventana principal
 ancho = 1280
 largo = 720
-ventana = pygame.display.set_mode([ancho, largo]) #ventana
+ventana = pygame.display.set_mode([ancho, largo+10]) #ventana
 pygame.display.set_caption("Pac-Man") # Título
 fondo= pygame.image.load("fondo_negro.png")
 
@@ -123,7 +140,6 @@ def jugar():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if jugar_back.checkForInput(jugar_mouse_pos):
                     menu_principal()
-                    pygame.mixer.music.stop()
 
         pygame.display.update()
 
@@ -274,6 +290,7 @@ def salon():
 
 def menu_principal(): #ventana del menú principal
     pygame.display.set_caption("Menú")
+    pygame.mixer.music.stop()
 
     while True:
         ventana.blit(fondo, (0,0)) #poner el fondo
@@ -319,13 +336,4 @@ def menu_principal(): #ventana del menú principal
 
 menu_principal()
 
-
-#CLASE JUEGO
-
-#Atributos: Número de juego, tablero (matriz 40x36,
-# 0: espaco vacío, 1: puntos, 2: cápsula de poder,3: frutas
-# 4: pared horizontal, 5: pared vertical, 6: puerta fantasmas
-# nivel (1 y 2), score
-
-#métodos: iniciar juego
 
