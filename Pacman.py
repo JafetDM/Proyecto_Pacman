@@ -35,6 +35,45 @@ def mostrar_texto(ventana, fuente, texto, color,  x, y):
     rectangulo = superficie.get_rect(center=(x, y))
     ventana.blit(superficie, rectangulo)
 
+"variable donde almacenar puntajes"
+puntajes=[]
+
+#MANEJO DE ARCHIVOS DE TEXTO
+
+#función para ordenar números
+def ordenar(numeros):
+    n = len(numeros)
+
+#Uso del método burbuja para el ordenamiento
+
+    for i in range(n):
+        # Últimos i elementos ya están en su lugar
+        for j in range(0, n - i - 1):
+            # Intercambiar si el elemento encontrado es mayor
+            # que el siguiente elemento
+            if numeros[j] < numeros[j + 1]:
+                numeros[j], numeros[j + 1] = numeros[j + 1], numeros[j]
+
+    return numeros
+
+# Lee los números desde el archivo de texto
+with open("puntajes_pacman.txt", "r") as archivo:
+    lineas = archivo.readlines()
+
+# Convierte las cadenas de texto a números y los almacena en una lista
+numeros = [int(linea.strip()) for linea in lineas]
+
+# Ordena la lista de mayor a menor
+ordenar(numeros)
+
+# Escribe los números ordenados de nuevo en el archivo
+with open("puntajes_pacman.txt", "w") as archivo:
+    for numero in numeros:
+        archivo.write(f"{numero}\n") #reescribe el archivo
+        puntajes.append(numero) #añade los numeros a la lista a mostrar en el hall of fame
+
+    contenido_actualizado = str(puntajes)
+
 #clase boton para la interfaz
 class Button():
     #iniciar atributos
@@ -277,7 +316,7 @@ def salon():
         ventana.blit(salon_text, salon_rect)
 
 #putnajes
-        puntajes_text = get_font(25).render(contenido_actualizado, True, amarillo)
+        puntajes_text = get_font(25).render(str(contenido_actualizado), True, amarillo)
         puntajes_rect = puntajes_text.get_rect(center=(640, 300))
         ventana.blit(puntajes_text, puntajes_rect)
 
@@ -347,43 +386,4 @@ def menu_principal(): #ventana del menú principal
 menu_principal()
 
 
-
-def obtener_enteros_impares(lineas, indice=1, lista_enteros=None):
-    if lista_enteros is None:
-        lista_enteros = []
-
-    if indice < len(lineas):
-        # Convierte la línea en un entero y agrega a la lista
-        lista_enteros.append(int(lineas[indice]))
-        # Llama recursivamente a la función con el siguiente índice impar
-        obtener_enteros_impares(lineas, indice + 2, lista_enteros)
-
-    return lista_enteros
-
-with open("puntajes_pacman.txt", "r") as archivo:
-    lineas = archivo.read().splitlines()  # obtiene lista
-
-lista_enteros = obtener_enteros_impares(lineas)
-menor = min(lista_enteros)  # obtiene el menor
-posicion_menor = lista_enteros.index(menor)  # obtiene su posición
-
-if len(lineas) > 6:
-
-    if posicion_menor ==0:
-        # Elimina el número menor y su antecesor de la lista original
-        del lineas[posicion_menor: posicion_menor + 2]
-
-    if posicion_menor == 1:
-        # Elimina el número menor y su antecesor de la lista original
-        del lineas[posicion_menor+1: posicion_menor + 3]
-
-    if posicion_menor == 2:
-        # Elimina el número menor y su antecesor de la lista original
-        del lineas[posicion_menor+2: posicion_menor + 4]
-
-# Abre el archivo en modo escritura y escribe el contenido actualizado
-with open("archivo_puntajes.txt", "w") as archivo:
-    archivo.write("\n".join(lineas))
-
-contenido_actualizado = "\n".join(lineas)
 
