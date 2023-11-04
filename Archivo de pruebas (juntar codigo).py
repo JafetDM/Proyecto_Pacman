@@ -41,21 +41,23 @@ level = [
 ]
 
 imagenes_jugador_principal = []
-
 for i in range(1, 3):  # Toma dos imagenes, se reeedimensionan y esto crea la ilusion de movimiento en mi personaje
     imagenes_jugador_principal.append(pygame.transform.scale(pygame.image.load(
-        f"C:\\Users\\emora\\OneDrive - Estudiantes ITCR\\Documentos\\Phyton\\GitHub\\Proyecto_Pacman\\pacman_imagenes\\{i}.jpg"),
+        f"C:\\Users\\emora\\OneDrive - Estudiantes ITCR\\Documentos\\GitHub\\Proyecto_Pacman\\pacman_imagenes\\{i}.jpg"),
                                             (20, 20)))
 
-rojo_img = pygame.transform.scale(pygame.image.load("rojo"),(20, 20))
+rojo_img = pygame.transform.scale(pygame.image.load("rojo.jpg"),(20, 20))
 
-rosa_img = pygame.transform.scale("rosa.jpg", (20,20))
+rosa_img = pygame.transform.scale(pygame.image.load("rosa.jpg"), (20,20))
 
-azul_img = pygame.transform.scale("azul.jpg", (20,20))
+azul_img = pygame.transform.scale(pygame.image.load("azul.jpg"), (20,20))
 
-naranja_img = pygame.transform.scale("naranja.jpg", (20,20))
+naranja_img = pygame.transform.scale(pygame.image.load("naranja.jpg"), (20,20))
 
-
+pos_x = 200  # Posiciones donde va a inicar pacman
+pos_y = 200
+direccion = 0
+contador = 0
 destellos = False
 giros_p = [False, False, False, False]
 direccion_commando = 0
