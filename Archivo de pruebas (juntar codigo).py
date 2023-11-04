@@ -213,3 +213,68 @@ while correr_juego:  # Aquí se aplica el loop para mantener la ventana abierta 
     personaje_principal()  # Para la decuada implementacion del movimiento del personaje
     pygame.display.flip()  # Esto me permite mostrar una y otra vez en la pantalla de juego lo creado en el loop y támbien las interacciones en la misma.
 pygame.quit()  # Para cerrar la ventana de juego
+
+class Pacman():
+    def __init__(self):
+        self.estado = True
+        self.pos_x=200
+        self.pos_y=200
+        self.pacman_velocidad= 2
+
+    def obtener_pos(self):
+        if direccion == 0 and giros_p[0]:
+            self.pos_x += pacman_velocidad
+        elif direccion == 1 and giros_p[1]:
+            self.pos_x -= pacman_velocidad
+        if direccion == 2 and giros_p[2]:
+            self.pos_y -= pacman_velocidad
+        elif direccion == 3 and giros_p[3]:
+            self.pos_y += pacman_velocidad
+
+        return self.pos_x, self.pos_y
+
+    # Para que la ventana del juego se mantenga abierta
+    def mover_pacman(self):
+        while self.estado == True:  # Aquí se aplica el loop para mantener la ventana abierta a ciertos fps
+            tiempo.tick(fps)
+            pantalla_de_juego.fill("black")
+            dibujar_mapa()
+            revisar_puntos()
+            puntaje = revisar_puntos()
+            dibuja_puntaje()
+
+            if contador < 19:  # Esto es simplemente para aplicar la ilusion del movimiento de la boca de pacman, utilizando el contador
+                contador += 1
+                if contador > 3:
+                    destellos = False
+            else:
+                contador = 0
+                destellos = True  # Esto hara que la bolita grande titile o destelle 3 veces por 1 segundo
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    correr_juego = False
+                if event.type == pygame.KEYDOWN:
+                    # Esto es para que el personaje PACMAN cambie de posicion respecto a las teclas
+                    if event.key == pygame.K_RIGHT:
+                        direccion_commando = 0
+                    if event.key == pygame.K_LEFT:
+                        direccion_commando = 1
+                    if event.key == pygame.K_UP:
+                        direccion_commando = 2
+                    if event.key == pygame.K_DOWN:
+                        direccion_commando = 3
+
+
+#Atributos
+#Estado: indica si PacMan está vivo o muerto.
+#Posición x: fila de la matriz en que se encuentra PacMan.
+#Posición y: columna de la matriz en que se encuentra PacMan.
+#Velocidad: indicador de velocidad de PacMan (1 Normal, 2 Rápido)
+
+#Métodos
+#Mover izquierda
+#Mover derecha
+#Mover arriba
+#Mover abajo
+#Comer alimento
+#Comer cápsula
