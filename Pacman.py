@@ -35,7 +35,7 @@ def mostrar_texto(ventana, fuente, texto, color,  x, y):
     rectangulo = superficie.get_rect(center=(x, y))
     ventana.blit(superficie, rectangulo)
 
-"variable donde almacenar puntajes"
+#variable donde almacenar puntajes
 puntajes=[]
 
 #MANEJO DE ARCHIVOS DE TEXTO
