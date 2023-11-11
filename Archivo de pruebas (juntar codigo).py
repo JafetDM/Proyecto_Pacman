@@ -19,10 +19,12 @@ naranja= (255, 128, 0)
 ancho = 1280
 largo = 720
 ventana = pygame.display.set_mode([ancho, largo]) #ventana
+superficie = pygame.Surface((ancho, largo), pygame.SRCALPHA)
 pygame.display.set_caption("Pac-Man") # Título
 fondo= pygame.image.load("fondo_negro.png")
 tiempo = pygame.time.Clock()
 fps = 60
+pause = False
 
 #imagenes
 jose_foto = pygame.image.load("jose_foto.jpg")
@@ -136,13 +138,13 @@ class Juego():
     # 3) nivel (1 y 2)
     # 4) score
 
-    #métodos: iniciar juego
     def __init__(self, num_juego, nivel):
         self.num_juego = num_juego #consecutivo del juego, cada que termina se actualiza
         self.tablero = matriz #será una matriz 40x36, se actualiza en tiempo real. Proviene de Matriz.py
         self.nivel = nivel #de 1 a 2, inicia en 1
         self.score = 0 #inicia en 0, esquema de puntos definido por alimento (puntos y fruta) y fantasmas comidos
 
+    # Métodos: iniciar juego, get_score()
     def iniciar(self):
         num1 = (largo-25) // 36
         num2 = (ancho - 560) // 40
@@ -197,6 +199,7 @@ class Pacman():
         self.row = self.centroy // self.num1
         self.col = self.centrox // self.num2
         self.level = matriz
+        global pause
 
     def direccion_personaje(self):
         # Dirección a la que debe mirar mi personaje principal
@@ -257,8 +260,14 @@ class Pacman():
 
     # Para que la ventana del juego se mantenga abierta
     def mover_pacman(self):
+        global pause, restart, save
         while self.estado:  # Aquí se aplica el loop para mantener la ventana abierta a ciertos fps
             tiempo.tick(fps)
+            if pause:
+                restart, save = menu_pausa()
+            else:
+                ventana.fill(negro)
+                niv1.iniciar()
 
             if self.contador < 19:  # Esto es simplemente para aplicar la ilusion del movimiento de la boca de pacman, utilizando el contador
                 self.contador += 1
@@ -271,21 +280,28 @@ class Pacman():
                 if event.type == pygame.QUIT:
                     self.estado = False
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        if pause:
+                            pause = False
+                        else:
+                            pause = True
                     # Esto es para que el personaje PACMAN cambie de dirección respecto a las teclas
-                    if event.key == pygame.K_RIGHT:
-                        self.direccion_commando = 0
-                    if event.key == pygame.K_LEFT:
-                        self.direccion_commando = 1
-                    if event.key == pygame.K_UP:
-                        self.direccion_commando = 2
-                    if event.key == pygame.K_DOWN:
-                        self.direccion_commando = 3
+                    if not pause:
+                        if event.key == pygame.K_RIGHT:
+                            self.direccion_commando = 0
+                        if event.key == pygame.K_LEFT:
+                            self.direccion_commando = 1
+                        if event.key == pygame.K_UP:
+                            self.direccion_commando = 2
+                        if event.key == pygame.K_DOWN:
+                            self.direccion_commando = 3
 
             # Mover pacman después de verificar las colisiones
-            self.pos_x, self.pos_y = pacman.obtener_pos()
-            self.centrox = self.pos_x + 5
-            self.centroy = self.pos_y + 5
-            self.giros_p = pacman.revisar_posicion()
+            if not pause:
+                self.pos_x, self.pos_y = pacman.obtener_pos()
+                self.centrox = self.pos_x + 5
+                self.centroy = self.pos_y + 5
+                self.giros_p = pacman.revisar_posicion()
 
             for i in range(4):
                 if self.direccion_commando == i and self.giros_p[i]:
@@ -319,6 +335,7 @@ def jugar():
         pacman.mover_pacman()
         score1= niv1.get_score()
         mostrar_texto(ventana, get_font(45), str(score1), blanco, 1000, 110)
+
 
 
         jugar_text= get_font(45).render("Puntaje", True, rosado)
@@ -536,6 +553,18 @@ def menu_principal(): #ventana del menú principal
 
 
         pygame.display.update()
+
+def menu_pausa():
+    pygame.draw.rect(superficie, (128, 128, 128, 150), [0, 0, ancho, largo])
+    pygame.draw.rect(superficie, "dark gray", [200, 150, 600, 50], 0, 10)
+    reset = pygame.draw.rect(superficie, blanco, [200, 220, 280, 50], 0, 10)
+    save = pygame.draw.rect(superficie, blanco, [520, 220, 280, 50], 0, 10)
+    superficie.blit(get_font(25).render("Juego Pausado: ESC para continuar", True, negro), (220, 160))
+    superficie.blit(get_font(25).render("Reiniciar", True, negro), (220, 230))
+    superficie.blit(get_font(25).render("Guardar", True, negro), (520, 230))
+    ventana.blit(superficie, (0,0),)
+    return reset, save
+
 
 menu_principal()
 
