@@ -58,7 +58,7 @@ def mostrar_texto(ventana, fuente, texto, color,  x, y):
 #variable donde almacenar puntajes
 puntajes=[]
 
-#MANEJO DE ARCHIVOS DE TEXTO
+#  MANEJO DE ARCHIVOS DE TEXTO
 
 #función para ordenar números
 def ordenar(numeros):
@@ -189,8 +189,8 @@ class Pacman():
         self.destellos = False
         self.giros_p = [False, False, False, False]
         self.direccion_commando = 0
-        self.centrox = self.pos_x + 11  # (ancho de la imagen dividido por 2)
-        self.centroy = self.pos_y + 11  # (alto de la imagen dividido por 2)
+        self.centrox = self.pos_x + 6  # (ancho de la imagen dividido por 2)
+        self.centroy = self.pos_y + 6  # (largo de la imagen dividido por 2)
         self.giros = [False, False, False, False]
         self.num1 = (largo - 25) // 36
         self.num2 = (ancho - 560) // 40
@@ -257,10 +257,8 @@ class Pacman():
 
     # Para que la ventana del juego se mantenga abierta
     def mover_pacman(self):
-
         while self.estado:  # Aquí se aplica el loop para mantener la ventana abierta a ciertos fps
             tiempo.tick(fps)
-            pacman.direccion_personaje()
 
             if self.contador < 19:  # Esto es simplemente para aplicar la ilusion del movimiento de la boca de pacman, utilizando el contador
                 self.contador += 1
@@ -284,15 +282,16 @@ class Pacman():
                         self.direccion_commando = 3
 
             # Mover pacman después de verificar las colisiones
-                self.pos_x, self.pos_y = pacman.obtener_pos()
-                self.centrox = self.pos_x + 10
-                self.centroy = self.pos_y + 10
-                self.giros_p = pacman.revisar_posicion()
+            self.pos_x, self.pos_y = pacman.obtener_pos()
+            self.centrox = self.pos_x + 5
+            self.centroy = self.pos_y + 5
+            self.giros_p = pacman.revisar_posicion()
 
-                for i in range(4):
-                    if self.direccion_commando == i and self.giros_p[i]:
-                        self.direccion = i
+            for i in range(4):
+                if self.direccion_commando == i and self.giros_p[i]:
+                    self.direccion = i
 
+            pacman.direccion_personaje()
             # Esto me permite mostrar una y otra vez en la pantalla de juego lo creado en el loop y támbien las interacciones en la misma.
             pygame.display.flip()
         pygame.quit()
@@ -300,6 +299,8 @@ class Pacman():
 #instancia de pacman:
 
 pacman= Pacman()
+
+# VENTANAS
 
 def jugar():
     pygame.display.set_caption("Juego") #ventana del juego
