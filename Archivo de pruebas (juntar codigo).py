@@ -144,7 +144,7 @@ class Juego():
         self.nivel = nivel #de 1 a 2, inicia en 1
         self.score = 0 #inicia en 0, esquema de puntos definido por alimento (puntos y fruta) y fantasmas comidos
 
-    # Métodos: iniciar juego, get_score()
+    # Métodos: iniciar juego, get_xx necesarios
     def iniciar(self):
         num1 = (largo-25) // 36
         num2 = (ancho - 560) // 40
@@ -167,6 +167,9 @@ class Juego():
     def get_score(self): #retorna score
         return (self.score)
 
+    def get_matriz(self): #retorna la matriz
+        return self.tablero
+
 #instancias de juego
 niv1 = Juego(1, 1)
 niv2 = Juego(1, 2)
@@ -180,11 +183,11 @@ class Pacman():
     # Posición x: fila de la matriz en que se encuentra PacMan.
     # Posición y: columna de la matriz en que se encuentra PacMan.
     # Velocidad: indicador de velocidad de PacMan (1 Normal, 2 Rápido)
-    # Dircción: indica hacia donde mira pacman
+    # Dirección: indica hacia donde mira pacman
     def __init__(self):
         self.estado = True
-        self.pos_x=350
-        self.pos_y=582
+        self.pos_x= ((1280-560) //40) *20
+        self.pos_y= ((720-25) //36) *20
         self.pacman_velocidad= 2
         self.direccion = 0
         self.contador = 0
@@ -198,7 +201,6 @@ class Pacman():
         self.num2 = (ancho - 560) // 40
         self.row = self.centroy // self.num1
         self.col = self.centrox // self.num2
-        self.level = matriz
         global pause
 
     def direccion_personaje(self):
@@ -218,15 +220,15 @@ class Pacman():
 
     def revisar_posicion(self):
 
-        if 0 <= self.row < len(self.level) and 0 <= self.col < len(self.level[self.row]):
+        if 0 <= self.row < len(niv1.get_matriz()) and 0 <= self.col < len(niv1.get_matriz()[self.row]):
             # Verificar giros basados en las casillas adyacentes
-            if self.level[self.row][self.col] != 0:
+            if niv1.get_matriz()[self.row][self.col] != 0:
                 self.giros[0] = True  # Puede moverse a la derecha
-            if self.level[self.row][self.col - 1] != 0:
+            if niv1.get_matriz()[self.row][self.col - 1] != 0:
                 self.giros[1] = True  # Puede moverse a la izquierda
-            if self.level[self.row - 1][self.col] != 0:
+            if niv1.get_matriz()[self.row - 1][self.col] != 0:
                 self.giros[2] = True  # Puede moverse hacia arriba
-            if self.level[self.row + 1][self.col] != 0:
+            if niv1.get_matriz()[self.row + 1][self.col] != 0:
                 self.giros[3] = True  # Puede moverse hacia abajo
 
         return self.giros
@@ -246,28 +248,32 @@ class Pacman():
     def get_destellos(self):
         return self.destellos
 
-    def revisar_puntos(self):
-        global score1
+    def get_estado(self):
+        return self.estado
 
-        if 0 <= self.row < len(self.level) and 0 <= self.col < len(self.level[self.row]):
-            if self.level[self.row][self.col] == 2:
-                self.level[self.row][self.col] = 4
+    def revisar_puntos(self):
+        score1= niv1.get_score()
+
+        if 0 <= self.row < len(niv1.get_matriz()) and 0 <= self.col < len(niv1.get_matriz()[self.row]):
+            if niv1.get_matriz()[self.row][self.col] == 2:
+                niv1.get_matriz()[self.row][self.col] = 4
                 score1 += 10
-            elif self.level[self.row][self.col] == 3:
-                self.level[self.row][self.col] = 4
+            elif niv1.get_matriz()[self.row][self.col] == 3:
+                niv1.get_matriz()[self.row][self.col] = 4
 
         return score1
 
     # Para que la ventana del juego se mantenga abierta
     def mover_pacman(self):
-        global pause, restart, save
+        global pause
         while self.estado:  # Aquí se aplica el loop para mantener la ventana abierta a ciertos fps
             tiempo.tick(fps)
             if pause:
-                restart, save = menu_pausa()
+                menu_pausa()
             else:
                 ventana.fill(negro)
                 niv1.iniciar()
+                pacman.revisar_puntos()
 
             if self.contador < 19:  # Esto es simplemente para aplicar la ilusion del movimiento de la boca de pacman, utilizando el contador
                 self.contador += 1
@@ -297,8 +303,8 @@ class Pacman():
                             self.direccion_commando = 3
 
             # Mover pacman después de verificar las colisiones
-            if not pause:
-                self.pos_x, self.pos_y = pacman.obtener_pos()
+            if not pause and (0 < self.pos_x <720) and (0 < self.pos_y <695):
+                self.pos_x, self.pos_y =pacman.obtener_pos()
                 self.centrox = self.pos_x + 5
                 self.centroy = self.pos_y + 5
                 self.giros_p = pacman.revisar_posicion()
@@ -306,7 +312,8 @@ class Pacman():
             for i in range(4):
                 if self.direccion_commando == i and self.giros_p[i]:
                     self.direccion = i
-
+            #self.pos_x, self.pos_y =
+            #self.giros_p =
             pacman.direccion_personaje()
             # Esto me permite mostrar una y otra vez en la pantalla de juego lo creado en el loop y támbien las interacciones en la misma.
             pygame.display.flip()
@@ -328,32 +335,15 @@ def jugar():
 
     while True:
 
-        jugar_mouse_pos = pygame.mouse.get_pos()
-
         ventana.fill(negro)
         niv1.iniciar()
         pacman.mover_pacman()
-        score1= niv1.get_score()
-        mostrar_texto(ventana, get_font(45), str(score1), blanco, 1000, 110)
-
-
+        mostrar_texto(ventana, get_font(45), str(niv1.get_score()), blanco, 1000, 110)
 
         jugar_text= get_font(45).render("Puntaje", True, rosado)
         jugar_rect = jugar_text.get_rect(center= (1000, 50))
         ventana.blit(jugar_text, jugar_rect)
 
-        jugar_back = Button(imagen=None, pos=(1000, 460), text_input= "Volver", font= get_font(75), color_base= blanco, hovering_color= amarillo)
-
-        jugar_back.changeColor(jugar_mouse_pos)
-        jugar_back.update(ventana)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if jugar_back.checkForInput(jugar_mouse_pos):
-                    menu_principal()
 
         pygame.display.update()
 
@@ -511,6 +501,7 @@ def salon():
 def menu_principal(): #ventana del menú principal
     pygame.display.set_caption("Menú")
     pygame.mixer.music.stop()
+    global pausa
 
     while True:
         ventana.blit(fondo, (0,0)) #poner el fondo
@@ -544,6 +535,7 @@ def menu_principal(): #ventana del menú principal
             if event.type == pygame.MOUSEBUTTONDOWN:
                     if boton_jugar.checkForInput(menu_mouse_pos):
                         jugar()
+                        pausa = False
                     if boton_ayuda.checkForInput(menu_mouse_pos):
                         ayuda()
                     if boton_acerca.checkForInput(menu_mouse_pos):
@@ -555,16 +547,58 @@ def menu_principal(): #ventana del menú principal
         pygame.display.update()
 
 def menu_pausa():
-    pygame.draw.rect(superficie, (128, 128, 128, 150), [0, 0, ancho, largo])
-    pygame.draw.rect(superficie, "dark gray", [200, 150, 600, 50], 0, 10)
-    reset = pygame.draw.rect(superficie, blanco, [200, 220, 280, 50], 0, 10)
-    save = pygame.draw.rect(superficie, blanco, [520, 220, 280, 50], 0, 10)
-    superficie.blit(get_font(25).render("Juego Pausado: ESC para continuar", True, negro), (220, 160))
-    superficie.blit(get_font(25).render("Reiniciar", True, negro), (220, 230))
-    superficie.blit(get_font(25).render("Guardar", True, negro), (520, 230))
-    ventana.blit(superficie, (0,0),)
-    return reset, save
+    global pause
 
+    while True:
+        jugar_mouse_pos = pygame.mouse.get_pos()
+
+        pygame.draw.rect(superficie, (128, 128, 128, 150), [0, 0, ancho, largo])
+
+
+        jugar_back = Button(imagen=None, pos=(1000, 460), text_input="Volver", font=get_font(75), color_base=blanco,
+                            hovering_color=amarillo)
+
+        jugar_back.changeColor(jugar_mouse_pos)
+        jugar_back.update(superficie)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if jugar_back.checkForInput(jugar_mouse_pos):
+                    pause= False
+                    menu_principal()
+
+        pygame.display.update()
+
+        save = pygame.draw.rect(superficie, blanco, [520, 220, 280, 50], 0, 10)
+        superficie.blit(get_font(25).render("Juego Pausado: ESC para continuar", True, negro), (220, 160))
+
+
+        if pacman.get_estado() == True:
+            superficie.blit(get_font(25).render("Pacman está vivo", True, negro), (220, 230))
+
+        else:
+            superficie.blit(get_font(25).render("Pacman está muerto", True, negro), (220, 230))
+
+        mostrar_matriz(niv1.get_matriz())
+
+        superficie.blit(get_font(25).render("Fantasmas están vivos: ", True, negro), (520, 230))
+        ventana.blit(superficie, (0,0),)
+
+
+
+def mostrar_matriz(matriz):
+    global pause
+    if pause:
+    # Configuración de la ventana
+        for i, fila in enumerate(matriz):
+            for j, valor in enumerate(fila):
+                texto = get_font(10).render(str(valor), True, negro)
+                x = j * 15  # Ajusta este valor según el ancho deseado de las celdas
+                y = i * 15  # Ajusta este valor según el largo deseado de las celdas
+                superficie.blit(texto, (x, y))
 
 menu_principal()
 
