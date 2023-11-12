@@ -2,6 +2,7 @@
 
 import pygame, sys, math
 from Matriz import matriz
+import random
 
 pygame.init() #Iniciar pygame
 
@@ -47,6 +48,39 @@ azul_img = pygame.transform.scale(pygame.image.load("azul.jpg"), (20,20))
 naranja_img = pygame.transform.scale(pygame.image.load("naranja.jpg"), (20,20))
 
 mi_fuente = pygame.font.SysFont("Pacifico", 36)
+
+#Posiciones de los fantasmas
+rojo_x = 900
+rojo_y = 350
+rojo_direccion = 0
+azul_x = 800
+azul_y = 350
+azul_direccion = 2
+rosa_x = 850
+rosa_y = 350
+rosa_direccion = 2
+naranja_x = 700
+naranja_y = 350
+naranja_direccion = 2
+
+powerup = False
+power_contador = 0
+come_fantasmas = [False, False, False, False]
+targets = [(pos_x, pos_y), (pos_x, pos_y), (pos_x, pos_y), (pos_x, pos_y)]
+rojo_muerto = False
+azul_muerto = False
+naranja_muerto = False
+rosa_muerto = False
+blinky_box = False
+inky_box = False
+clyde_box = False
+pinky_box = False
+moving = False
+fantasmas_velocidad = [2, 2, 2, 2]
+startup_counter = 0
+lives = 3
+game_over = False
+gana_juego = False
 
 #fuente
 def get_font(size): #obtener la fuente de letra
@@ -130,7 +164,7 @@ class Button():
         else:
             self.text = self.font.render(self.text_input, True, self.color_base)
 
-#clase Juego
+# -----------------------------------Clase Juego---------------------------
 class Juego():
     # Atributos: 1) Número de juego,
     # 2) tablero (matriz 40x36) sus valores son
@@ -174,7 +208,7 @@ class Juego():
 niv1 = Juego(1, 1)
 niv2 = Juego(1, 2)
 
-#Clase Pacman
+#-------------------------------Clase Pacman-----------------
 
 class Pacman():
 
@@ -339,7 +373,107 @@ class Pacman():
 
 pacman= Pacman()
 
-# VENTANAS
+# ----------------------------------Clase Fantasma -----------------------------------------
+
+class Ghost():  # Estas son las caracteristicas que comparten los fantasmas;
+    # x_coord y y_coord son las coordenadas de los fantasmas, objetivo es a quien buscan, img sus imagenes
+    # direcc su direccion, box es para saber si se encuentran en la parte de la caja, id es para identificar a cada fantasma por separado
+    def __init__(self, x_coord, y_coord, objetivo, velocidad, img, direcc, muerto, box, id, x_pos, y_pos, max_pasos):
+        self.x_pos = x_coord
+        self.y_pos = y_coord
+        self.center_x = self.x_pos + 10  # Para ajustar el centro de la imagen
+        self.center_y = self.y_pos + 10
+        self.objetivo = objetivo
+        self.velocidad = velocidad
+        self.img = img
+        self.direccion = direcc
+        self.muerto = muerto
+        self.in_box = box
+        self.id = id
+        self.rect = self.dibuja()  # Hitbox de los fantasmas para revisar en colisiones
+        self.turns = [False, False, False, False]
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.max_pasos = max_pasos
+        self.contador_pasos = 0
+        self.direccion_actual = random.choice([0, 1, 2, 3])
+
+    def dibuja(self):  # Condiciones de los estados de los fantasmas
+        # Fantasmas en su estado normal
+        if (not powerup and not self.muerto) or (come_fantasmas[self.id] and powerup and not self.muerto):
+            pantalla_de_juego.blit(self.img, (self.x_pos, self.y_pos))
+        # Fantasmas en estado asustado sino esta muertos
+        elif powerup and not self.muerto and not come_fantasmas[self.id]:
+            pantalla_de_juego.blit(asustado_img, (self.x_pos, self.y_pos))
+        # Fantasmas muertos
+        else:
+            pantalla_de_juego.blit(muerto_img, (self.x_pos, self.y_pos))
+        fantasma_rect = pygame.rect.Rect((self.center_x - 18, self.center_y - 18), (
+        36, 36))  # hitbox para colisiones con los fantasmas, es un simple rectangulo para verificar las colisiones
+        return fantasma_rect
+
+    def revisar_colisiones(self, x_coord, y_coord):
+        # Verificar si la posición siguiente está dentro de los límites de la matriz
+        if 0 <= x_coord < len(level[0]) and 0 <= y_coord < len(level):
+            # Verificar si el próximo movimiento es permitido (casillas diferentes de 0)
+            if level[y_coord][x_coord] != 0:
+                return True
+        return False
+
+    def move_naranja(self):
+        global naranja_direccion
+
+        if self.contador_pasos < 20:
+            # Mover en la dirección actual
+            self.contador_pasos += 1
+            nueva_x, nueva_y = self.x_pos, self.y_pos
+
+            if self.direccion_actual == 0:  # Mover hacia arriba
+                nueva_y -= 1
+            elif self.direccion_actual == 1:  # Mover hacia abajo
+                nueva_y += 1
+            elif self.direccion_actual == 2:  # Mover hacia la izquierda
+                nueva_x -= 1
+            elif self.direccion_actual == 3:  # Mover hacia la derecha
+                nueva_x += 1
+
+            # Verificar si las nuevas coordenadas son válidas (no colisionan con obstáculos)
+            if not self.revisar_colisiones(nueva_x, nueva_y):
+                self.x_pos, self.y_pos = nueva_x, nueva_y
+        else:
+            # Cambiar de dirección después de 20 pasos
+            self.contador_pasos = 0
+            posibles_direcciones = [0, 1, 2, 3]
+            posibles_direcciones.remove(self.direccion_actual)
+            nueva_direccion = random.choice(posibles_direcciones)
+
+            # Calcular las nuevas coordenadas según la nueva dirección
+            nueva_x, nueva_y = self.x_pos, self.y_pos
+
+            if nueva_direccion == 0:  # Mover hacia arriba
+                nueva_y -= 1
+            elif nueva_direccion == 1:  # Mover hacia abajo
+                nueva_y += 1
+            elif nueva_direccion == 2:  # Mover hacia la izquierda
+                nueva_x -= 1
+            elif nueva_direccion == 3:  # Mover hacia la derecha
+                nueva_x += 1
+
+            # Verificar si las nuevas coordenadas son válidas (no colisionan con obstáculos)
+            if not self.revisar_colisiones(nueva_x, nueva_y):
+                self.x_pos, self.y_pos = nueva_x, nueva_y
+                self.direccion_actual = nueva_direccion
+
+        return self.x_pos, self.y_pos
+
+    # def move_rojo(self):
+
+    # def move_azul(self):
+
+    # def move_rosa(self):
+
+
+# ......................... VENTANAS -------------
 
 def jugar():
     pygame.display.set_caption("Juego") #ventana del juego
