@@ -225,17 +225,17 @@ class Pacman():
     # Dirección: indica hacia donde mira pacman
     def __init__(self):
         self.estado = True
-        self.pos_x= ((1280-560) //40) *30
-        self.pos_y= (((720-25) //36) *31)
-        self.pacman_velocidad= 1
+        self.num1 = ((largo - 25) // 36)
+        self.num2 = (ancho - 560) // 40
+        self.pos_x= (self.num2 * 30) -7
+        self.pos_y= ((self.num1) *31) -7
+        self.pacman_velocidad= 2
         self.direccion = 0
         self.contador = 0
         self.destellos = False
         self.giros_p = [False, False, False, False]
         self.direccion_commando = 0
-        self.num1 = ((largo - 20) // 36)
-        self.num2 = (ancho - 560) // 40
-        self.rect = pygame.Rect((self.pos_x)-10, (self.pos_y)-10, 10, 10)
+        self.rect = pygame.Rect((self.pos_x), (self.pos_y), 7, 7)
         self.giros = [False, False, False, False]
         self.row = self.rect.centery // self.num1
         self.col = self.rect.centerx // self.num2
@@ -286,7 +286,7 @@ class Pacman():
             nueva_pos_y += self.pacman_velocidad
 
         # Verificar si la nueva posición colisiona con las paredes
-        rect_futuro = pygame.Rect(nueva_pos_x, nueva_pos_y, 10, 10)
+        rect_futuro = pygame.Rect(nueva_pos_x, nueva_pos_y, 10,10)
         if not self.colisiona_pared(rect_futuro):
             self.rect.x = nueva_pos_x
             self.rect.y = nueva_pos_y
@@ -297,7 +297,8 @@ class Pacman():
         for i in range(len(niv1.get_matriz())):
             for j in range(len(niv1.get_matriz()[i])):
                 if niv1.get_matriz()[i][j] == 0:
-                    pared = pygame.Rect(j * self.num2, i * self.num1, self.num2, self.num1)
+                    pared = pygame.Rect(j * self.num2 +(0.5*self.num2), i * self.num1 + (0.5*self.num1), 10,10)
+
                     if rect_futuro.colliderect(pared):
                         return True
         return False
@@ -531,19 +532,17 @@ def draw_misc():
 
 # INSTANCIAS FANTASMAS
 
+#rojo = Ghost(rojo_x, rojo_y, targets[0], fantasmas_velocidad[0], rojo_img, rojo_direccion, rojo_muerto,
+ #                    blinky_box, 0)
+#
+ #       azul = Ghost(azul_x, azul_y, targets[1], fantasmas_velocidad[1], azul_img, azul_direccion, azul_muerto,
+  #                   inky_box, 1)
 
-rojo = Ghost(rojo_x, rojo_y, targets[0], fantasmas_velocidad[0], rojo_img, rojo_direccion, rojo_muerto,
-                 blinky_box, 0)
+   #     rosita = Ghost(rosa_x, rosa_y, targets[2], fantasmas_velocidad[2], rosa_img, rosa_direccion, rosa_muerto,
+    #                   pinky_box, 2)
 
-azul = Ghost(azul_x, azul_y, targets[1], fantasmas_velocidad[1], azul_img, azul_direccion, azul_muerto,
-                 inky_box, 1)
-
-rosita = Ghost(rosa_x, rosa_y, targets[2], fantasmas_velocidad[2], rosa_img, rosa_direccion, rosa_muerto,
-                 pinky_box, 2)
-
-naranja = Ghost(naranja_x, naranja_y, targets[3], fantasmas_velocidad[3], naranja_img, naranja_direccion,
-                    naranja_muerto,
-                    clyde_box, 3)
+     #   naranja = Ghost(naranja_x, naranja_y, targets[3], fantasmas_velocidad[3], naranja_img, naranja_direccion,
+      #                  naranja_muerto, clyde_box, 3)
 
 
 # ......................... VENTANAS -------------
@@ -563,13 +562,15 @@ def jugar():
         pacman.mover_pacman()
         # Inicializa a los fantasmas con sus respectivas posiciones, velocidades y estados.
 
-        rojo.dibuja()
+   #     rojo.dibuja()
 
-        azul.dibuja()
+  #      azul.dibuja()
 
-        rosita.dibuja()
+ #       rosita.dibuja()
 
-        naranja.dibuja()
+#        naranja.dibuja()
+
+
         mostrar_texto(ventana, get_font(45), str(niv1.get_score()), blanco, 1000, 110)
 
         jugar_text= get_font(45).render("Puntaje", True, rosado)
