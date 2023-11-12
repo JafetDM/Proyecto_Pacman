@@ -186,21 +186,20 @@ class Pacman():
     # Dirección: indica hacia donde mira pacman
     def __init__(self):
         self.estado = True
-        self.pos_x= ((1280-560) //40) *20
-        self.pos_y= ((720-25) //36) *20
-        self.pacman_velocidad= 2
+        self.pos_x= ((1280-560) //40) *30
+        self.pos_y= (((720-25) //36) *31)
+        self.pacman_velocidad= 1
         self.direccion = 0
         self.contador = 0
         self.destellos = False
         self.giros_p = [False, False, False, False]
         self.direccion_commando = 0
-        self.centrox = self.pos_x + 6  # (ancho de la imagen dividido por 2)
-        self.centroy = self.pos_y + 6  # (largo de la imagen dividido por 2)
-        self.giros = [False, False, False, False]
-        self.num1 = (largo - 25) // 36
+        self.num1 = ((largo - 20) // 36)
         self.num2 = (ancho - 560) // 40
-        self.row = self.centroy // self.num1
-        self.col = self.centrox // self.num2
+        self.rect = pygame.Rect((self.pos_x)-10, (self.pos_y)-10, 10, 10)
+        self.giros = [False, False, False, False]
+        self.row = self.rect.centery // self.num1
+        self.col = self.rect.centerx // self.num2
         global pause
 
     def direccion_personaje(self):
@@ -219,6 +218,7 @@ class Pacman():
                                    (self.pos_x, self.pos_y))
 
     def revisar_posicion(self):
+        self.giros = [False, False, False, False]
 
         if 0 <= self.row < len(niv1.get_matriz()) and 0 <= self.col < len(niv1.get_matriz()[self.row]):
             # Verificar giros basados en las casillas adyacentes
@@ -234,16 +234,34 @@ class Pacman():
         return self.giros
 
     def obtener_pos(self):
-        if self.direccion == 0 and self.giros_p[0]:
-            self.pos_x += self.pacman_velocidad
-        elif self.direccion == 1 and self.giros_p[1]:
-            self.pos_x -= self.pacman_velocidad
-        if self.direccion == 2 and self.giros_p[2]:
-            self.pos_y -= self.pacman_velocidad
-        elif self.direccion == 3 and self.giros_p[3]:
-            self.pos_y += self.pacman_velocidad
+        nueva_pos_x = self.rect.x
+        nueva_pos_y = self.rect.y
 
-        return self.pos_x, self.pos_y
+        if self.direccion == 0 and self.giros_p[0]:
+            nueva_pos_x += self.pacman_velocidad
+        elif self.direccion == 1 and self.giros_p[1]:
+            nueva_pos_x -= self.pacman_velocidad
+        if self.direccion == 2 and self.giros_p[2]:
+            nueva_pos_y -= self.pacman_velocidad
+        elif self.direccion == 3 and self.giros_p[3]:
+            nueva_pos_y += self.pacman_velocidad
+
+        # Verificar si la nueva posición colisiona con las paredes
+        rect_futuro = pygame.Rect(nueva_pos_x, nueva_pos_y, 10, 10)
+        if not self.colisiona_pared(rect_futuro):
+            self.rect.x = nueva_pos_x
+            self.rect.y = nueva_pos_y
+
+        return self.rect.x, self.rect.y
+
+    def colisiona_pared(self, rect_futuro):
+        for i in range(len(niv1.get_matriz())):
+            for j in range(len(niv1.get_matriz()[i])):
+                if niv1.get_matriz()[i][j] == 0:
+                    pared = pygame.Rect(j * self.num2, i * self.num1, self.num2, self.num1)
+                    if rect_futuro.colliderect(pared):
+                        return True
+        return False
 
     def get_destellos(self):
         return self.destellos
@@ -270,10 +288,10 @@ class Pacman():
             tiempo.tick(fps)
             if pause:
                 menu_pausa()
-            else:
-                ventana.fill(negro)
-                niv1.iniciar()
-                pacman.revisar_puntos()
+
+            ventana.fill(negro)
+            niv1.iniciar()
+            pacman.revisar_puntos()
 
             if self.contador < 19:  # Esto es simplemente para aplicar la ilusion del movimiento de la boca de pacman, utilizando el contador
                 self.contador += 1
@@ -304,9 +322,7 @@ class Pacman():
 
             # Mover pacman después de verificar las colisiones
             if not pause and (0 < self.pos_x <720) and (0 < self.pos_y <695):
-                self.pos_x, self.pos_y =pacman.obtener_pos()
-                self.centrox = self.pos_x + 5
-                self.centroy = self.pos_y + 5
+                self.pos_x, self.pos_y = pacman.obtener_pos()
                 self.giros_p = pacman.revisar_posicion()
 
             for i in range(4):
@@ -549,10 +565,12 @@ def menu_principal(): #ventana del menú principal
 def menu_pausa():
     global pause
 
-    while True:
+    while pause:
+
         jugar_mouse_pos = pygame.mouse.get_pos()
 
         pygame.draw.rect(superficie, (128, 128, 128, 150), [0, 0, ancho, largo])
+        pygame.draw.rect(superficie, "dark gray", [650, 150, 600, 50], 0,20)
 
 
         jugar_back = Button(imagen=None, pos=(1000, 460), text_input="Volver", font=get_font(75), color_base=blanco,
@@ -567,25 +585,27 @@ def menu_pausa():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if jugar_back.checkForInput(jugar_mouse_pos):
-                    pause= False
                     menu_principal()
+                    pause = False
 
-        pygame.display.update()
 
-        save = pygame.draw.rect(superficie, blanco, [520, 220, 280, 50], 0, 10)
-        superficie.blit(get_font(25).render("Juego Pausado: ESC para continuar", True, negro), (220, 160))
+        superficie.blit(get_font(25).render("Juego Pausado: ESC para continuar", True, negro), (670, 160))
 
 
         if pacman.get_estado() == True:
-            superficie.blit(get_font(25).render("Pacman está vivo", True, negro), (220, 230))
+            superficie.blit(get_font(25).render("Pacman está vivo", True, negro), (670, 230))
 
         else:
-            superficie.blit(get_font(25).render("Pacman está muerto", True, negro), (220, 230))
+            superficie.blit(get_font(25).render("Pacman está muerto", True, negro), (670, 230))
 
         mostrar_matriz(niv1.get_matriz())
 
-        superficie.blit(get_font(25).render("Fantasmas están vivos: ", True, negro), (520, 230))
-        ventana.blit(superficie, (0,0),)
+        superficie.blit(get_font(25).render("Fantasmas están vivos: ", True, negro), (920, 230))
+        ventana.blit(superficie, (0,0))
+        pygame.display.update()
+        pygame.display.flip()
+
+
 
 
 
@@ -602,12 +622,4 @@ def mostrar_matriz(matriz):
 
 menu_principal()
 
-
-#Métodos
-#Mover izquierda
-#Mover derecha
-#Mover arriba
-#Mover abajo
-#Comer alimento
-#Comer cápsula
 
