@@ -48,7 +48,11 @@ azul_img = pygame.transform.scale(pygame.image.load("azul.jpg"), (20,20))
 naranja_img = pygame.transform.scale(pygame.image.load("naranja.jpg"), (20,20))
 
 mi_fuente = pygame.font.SysFont("Pacifico", 36)
+font = pygame.font.Font('freesansbold.ttf', 20)
 
+
+pos_x = 200 #Posiciones donde va a inicar pacman
+pos_y = 180
 #Posiciones de los fantasmas
 rojo_x = 900
 rojo_y = 350
@@ -63,6 +67,7 @@ naranja_x = 700
 naranja_y = 350
 naranja_direccion = 2
 
+score = 0
 powerup = False
 power_contador = 0
 come_fantasmas = [False, False, False, False]
@@ -401,22 +406,22 @@ class Ghost():  # Estas son las caracteristicas que comparten los fantasmas;
     def dibuja(self):  # Condiciones de los estados de los fantasmas
         # Fantasmas en su estado normal
         if (not powerup and not self.muerto) or (come_fantasmas[self.id] and powerup and not self.muerto):
-            pantalla_de_juego.blit(self.img, (self.x_pos, self.y_pos))
+            ventana.blit(self.img, (self.x_pos, self.y_pos))
         # Fantasmas en estado asustado sino esta muertos
         elif powerup and not self.muerto and not come_fantasmas[self.id]:
-            pantalla_de_juego.blit(asustado_img, (self.x_pos, self.y_pos))
+            ventana.blit(asustado_img, (self.x_pos, self.y_pos))
         # Fantasmas muertos
         else:
-            pantalla_de_juego.blit(muerto_img, (self.x_pos, self.y_pos))
+            ventana.blit(muerto_img, (self.x_pos, self.y_pos))
         fantasma_rect = pygame.rect.Rect((self.center_x - 18, self.center_y - 18), (
         36, 36))  # hitbox para colisiones con los fantasmas, es un simple rectangulo para verificar las colisiones
         return fantasma_rect
 
     def revisar_colisiones(self, x_coord, y_coord):
         # Verificar si la posición siguiente está dentro de los límites de la matriz
-        if 0 <= x_coord < len(level[0]) and 0 <= y_coord < len(level):
+        if 0 <= x_coord < len(niv1.get_matriz()[0]) and 0 <= y_coord < len(niv1.get_matriz()):
             # Verificar si el próximo movimiento es permitido (casillas diferentes de 0)
-            if level[y_coord][x_coord] != 0:
+            if niv1.get_matriz()[y_coord][x_coord] != 0:
                 return True
         return False
 
@@ -473,6 +478,74 @@ class Ghost():  # Estas son las caracteristicas que comparten los fantasmas;
     # def move_rosa(self):
 
 
+def draw_misc():
+    global gana_juego
+    score_text = font.render(f'Puntaje: {score}', True, 'white')  # Texto de puntaje
+    ventana.blit(score_text, (10, 920))
+    if powerup:  # Dibuja el indicador de la potencia si está activo
+        pygame.draw.circle(ventana, 'blue', (140, 930), 15)
+    for i in range(lives):  # Dibuja los íconos de vidas
+        ventana.blit(pygame.transform.scale(imagenes_jugador_principal[0], (30, 30)), (650 + i * 40, 915))
+    if game_over:  # Dibuja la pantalla de Game Over si es necesario
+        pygame.draw.rect(ventana, 'white', [50, 200, 800, 300], 0, 10)
+        pygame.draw.rect(ventana, 'dark gray', [70, 220, 760, 260], 0, 10)
+        gameover_text = font.render('Fin del juego! Barra espaciadora para reiniciar!', True, 'red')
+        ventana.blit(gameover_text, (100, 300))
+
+    if gana_juego:  # Dibuja la pantalla de Victoria si es necesario
+        pygame.draw.rect(ventana, 'white', [50, 200, 800, 300], 0, 10)
+        pygame.draw.rect(ventana, 'dark gray', [70, 220, 760, 260], 0, 10)
+        gameover_text = font.render('Ganaste! Barra espaciadora para reiniciar!', True, 'green')
+        ventana.blit(gameover_text, (100, 300))
+
+
+    center_x = pos_x + 10
+    center_y = pos_y + 10
+
+    if powerup:
+        fantasmas_velocidad = [1, 1, 1, 1]  # Velocidades de los fantasmas durante el poder especial
+    else:
+        fantasmas_velocidad = [2, 2, 2, 2]  # Velocidades normales de los fantasmas.
+    if come_fantasmas[0]:
+        fantasmas_velocidad[0] = 2  # Velocidad del fantasma rojo cuando es comido.
+    if come_fantasmas[1]:
+        fantasmas_velocidad[1] = 2  # Velocidad del fantasma azul cuando es comido.
+    if come_fantasmas[2]:
+        fantasmas_velocidad[2] = 2  # Velocidad del fantasma rosa cuando es comido.
+    if come_fantasmas[3]:
+        fantasmas_velocidad[3] = 2  # Velocidad del fantasma naranja cuando es comido.
+    if rojo_muerto:
+        fantasmas_velocidad[0] = 4  # Velocidad del fantasma rojo cuando está muerto.
+    if azul_muerto:
+        fantasmas_velocidad[1] = 4  # Velocidad del fantasma azul cuando está muerto.
+    if rosa_muerto:
+        fantasmas_velocidad[2] = 4  # Velocidad del fantasma rosa cuando está muerto.
+    if naranja_muerto:
+        fantasmas_velocidad[3] = 4  # Velocidad del fantasma naranja cuando está muerto.
+
+    gana_juego = True  # Ciclo for para ganar
+    for i in range(len(niv1.get_matriz())):
+        if 1 in niv1.get_matriz()[i] or 2 in niv1.get_matriz()[i]:
+            gana_juego = False
+
+
+# INSTANCIAS FANTASMAS
+
+
+rojo = Ghost(rojo_x, rojo_y, targets[0], fantasmas_velocidad[0], rojo_img, rojo_direccion, rojo_muerto,
+                 blinky_box, 0)
+
+azul = Ghost(azul_x, azul_y, targets[1], fantasmas_velocidad[1], azul_img, azul_direccion, azul_muerto,
+                 inky_box, 1)
+
+rosita = Ghost(rosa_x, rosa_y, targets[2], fantasmas_velocidad[2], rosa_img, rosa_direccion, rosa_muerto,
+                 pinky_box, 2)
+
+naranja = Ghost(naranja_x, naranja_y, targets[3], fantasmas_velocidad[3], naranja_img, naranja_direccion,
+                    naranja_muerto,
+                    clyde_box, 3)
+
+
 # ......................... VENTANAS -------------
 
 def jugar():
@@ -488,6 +561,15 @@ def jugar():
         ventana.fill(negro)
         niv1.iniciar()
         pacman.mover_pacman()
+        # Inicializa a los fantasmas con sus respectivas posiciones, velocidades y estados.
+
+        rojo.dibuja()
+
+        azul.dibuja()
+
+        rosita.dibuja()
+
+        naranja.dibuja()
         mostrar_texto(ventana, get_font(45), str(niv1.get_score()), blanco, 1000, 110)
 
         jugar_text= get_font(45).render("Puntaje", True, rosado)
