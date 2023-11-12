@@ -1,0 +1,10 @@
+Proyecto pacman
+versión a utilizar: Python 3.11
+ruta de git: https://github.com/JafetDM/Proyecto_Pacman
+
+instrucciones:
+descargar todos los archivos necesarios, se encuentran en el git
+
+además, correr .py llamado: Entrega
+Este se encuentra en main
+sino tambien esta en branch: jafet
