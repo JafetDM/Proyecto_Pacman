@@ -1,6 +1,8 @@
 import pygame
 import math
-
+import random
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
 pygame.init() #configuración básica de la pantalla de juego
 global alto, ancho
 ancho = 1280
@@ -102,7 +104,7 @@ game_over = False
 gana_juego = False
 
 
-class Ghost:# Estas son las caracteristicas que comparten los fantasmas;
+class Ghost():# Estas son las caracteristicas que comparten los fantasmas;
     #x_coord y y_coord son las coordenadas de los fantasmas, objetivo es a quien buscan, img sus imagenes
     #direcc su direccion, box es para saber si se encuentran en la parte de la caja, id es para identificar a cada fantasma por separado
     def __init__(self, x_coord, y_coord, objetivo, velocidad, img, direcc, muerto, box, id):
@@ -119,6 +121,9 @@ class Ghost:# Estas son las caracteristicas que comparten los fantasmas;
         self.id = id
         self.rect = self.dibuja() #Hitbox de los fantasmas para revisar en colisiones
         self.turns = [False,False,False,False]
+        self.contador_pasos = 0
+        self.max_pasos = 10
+
 
     def dibuja(self):#Condiciones de los estados de los fantasmas
         #Fantasmas en su estado normal
@@ -133,408 +138,67 @@ class Ghost:# Estas son las caracteristicas que comparten los fantasmas;
         fantasma_rect = pygame.rect.Rect((self.center_x - 18, self.center_y - 18), (36, 36))#hitbox para colisiones con los fantasmas, es un simple rectangulo para verificar las colisiones
         return fantasma_rect
 
-    def colisiones(self, x_coord, y_coord):
+    def revisar_colisiones(self, x_coord, y_coord):
         # Verificar si la posición siguiente está dentro de los límites de la matriz
         if 0 <= x_coord < len(level[0]) and 0 <= y_coord < len(level):
-            # Verificar si el próximo movimiento es permitido (1, 2, 3 o 4)
-            if level[y_coord][x_coord] in [1, 2, 3, 4]:
+            # Verificar si el próximo movimiento es permitido (casillas diferentes de 0)
+            if level[y_coord][x_coord] != 0:
                 return True
         return False
-
-    def revisar_colisiones(self):
-        
-
-        # Calcular las posiciones siguientes según la dirección del fantasma
-        x_coord = int(self.center_x / 15)  # Ajusta según tus necesidades
-        y_coord = int(self.center_y / 15)  # Ajusta según tus necesidades
-
-        # Verificar colisiones en las posiciones siguientes
-        if self.direccion == 0 and self.colisiones(x_coord + 1, y_coord):
-            self.turns[0] = True
-        if self.direccion == 1 and self.colisiones(x_coord - 1, y_coord):
-            self.turns[1] = True
-        if self.direccion == 2 and self.colisiones(x_coord, y_coord + 1):
-            self.turns[2] = True
-        if self.direccion == 3 and self.colisiones(x_coord, y_coord - 1):
-            self.turns[3] = True
+           
     def move_naranja(self):
-        # Calcular las posiciones siguientes según la dirección del fantasma
-        x_coord = int(self.center_x / 40)  # Ajustar según el ancho de la ventana
-        y_coord = int(self.center_y / 40)  # Ajustar según el alto de la ventana
+        global naranja_direccion
+        if self.contador_pasos < self.max_pasos:
+            # Mover hacia adelante
+            self.contador_pasos += 1
+            nueva_x, nueva_y = self.x_pos, self.y_pos
 
-        # Verificar colisiones en las posiciones siguientes
-        self.revisar_colisiones()
+            # Determinar la dirección actual
+            if naranja_direccion == 0:  # Mover hacia arriba
+                nueva_y -= 1
+            elif naranja_direccion == 1:  # Mover hacia abajo
+                nueva_y += 1
+            elif naranja_direccion == 2:  # Mover hacia la izquierda
+                nueva_x -= 1
+            elif naranja_direccion == 3:  # Mover hacia la derecha
+                nueva_x += 1
 
-        # Lógica de movimiento
-        if self.direccion == 0 and self.turns[0]:
-            self.x_pos += self.velocidad
-        elif self.direccion == 1 and self.turns[1]:
-            self.x_pos -= self.velocidad
-        elif self.direccion == 2 and self.turns[2]:
-            self.y_pos += self.velocidad
-        elif self.direccion == 3 and self.turns[3]:
-            self.y_pos -= self.velocidad
+            # Verificar si las nuevas coordenadas son válidas (no colisionan con obstáculos)
+            if not self.revisar_colisiones(nueva_x, nueva_y):
+                self.x_pos, self.y_pos = nueva_x, nueva_y
+        else:
+            # Cambiar de dirección después de 300 pasos
+            self.contador_pasos = 0
+            posibles_direcciones = [0, 1, 2, 3]
+            nueva_direccion = random.choice(posibles_direcciones)
 
-        # Verificar límites de la ventana
-        if self.x_pos < -30:
-            self.x_pos = 1280
-        elif self.x_pos > 1280:
-            self.x_pos = -30  # Ajustar según el ancho de la ventana
+            # Calcular las nuevas coordenadas según la nueva dirección
+            nueva_x, nueva_y = self.x_pos, self.y_pos
 
-        return self.x_pos, self.y_pos, self.direccion
+            if nueva_direccion == 0:  # Mover hacia arriba
+                nueva_y -= 1
+            elif nueva_direccion == 1:  # Mover hacia abajo
+                nueva_y += 1
+            elif nueva_direccion == 2:  # Mover hacia la izquierda
+                nueva_x -= 1
+            elif nueva_direccion == 3:  # Mover hacia la derecha
+                nueva_x += 1
+
+            # Verificar si las nuevas coordenadas son válidas (no colisionan con obstáculos)
+            if not self.revisar_colisiones(nueva_x, nueva_y):
+                self.x_pos, self.y_pos = nueva_x, nueva_y
+                naranja_direccion = nueva_direccion
+        return self.x_pos, self.y_pos
+
+    # def move_rojo(self):
+        
+
+    # def move_azul(self):
         
         
 
-    def move_rojo(self):
-        
-        if self.direccion == 0:
-            if self.objetivo[0] > self.x_pos and self.turns[0]:
-                self.x_pos += self.velocidad
-            elif not self.turns[0]:
-                if self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-            elif self.turns[0]:
-                self.x_pos += self.velocidad
-        elif self.direccion == 1:
-            if self.objetivo[0] < self.x_pos and self.turns[1]:
-                self.x_pos -= self.velocidad
-            elif not self.turns[1]:
-                if self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-            elif self.turns[1]:
-                self.x_pos -= self.velocidad
-        elif self.direccion == 2:
-            if self.objetivo[1] < self.y_pos and self.turns[2]:
-                self.direccion = 2
-                self.y_pos -= self.velocidad
-            elif not self.turns[2]:
-                if self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-            elif self.turns[2]:
-                self.y_pos -= self.velocidad
-        elif self.direccion == 3:
-            if self.objetivo[1] > self.y_pos and self.turns[3]:
-                self.y_pos += self.velocidad
-            elif not self.turns[3]:
-                if self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-            elif self.turns[3]:
-                self.y_pos += self.velocidad
-        if self.x_pos < -30:
-            self.x_pos = 900
-        elif self.x_pos > 900:
-            self.x_pos - 30
-        return self.x_pos, self.y_pos, self.direccion
-
-    def move_azul(self):
-        
-        if self.direccion == 0:
-            if self.objetivo[0] > self.x_pos and self.turns[0]:
-                self.x_pos += self.velocidad
-            elif not self.turns[0]:
-                if self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-            elif self.turns[0]:
-                if self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                if self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                else:
-                    self.x_pos += self.velocidad
-        elif self.direccion == 1:
-            if self.objetivo[1] > self.y_pos and self.turns[3]:
-                self.direccion = 3
-            elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                self.x_pos -= self.velocidad
-            elif not self.turns[1]:
-                if self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-            elif self.turns[1]:
-                if self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                if self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                else:
-                    self.x_pos -= self.velocidad
-        elif self.direccion == 2:
-            if self.objetivo[1] < self.y_pos and self.turns[2]:
-                self.direccion = 2
-                self.y_pos -= self.velocidad
-            elif not self.turns[2]:
-                if self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-            elif self.turns[2]:
-                self.y_pos -= self.velocidad
-        elif self.direccion == 3:
-            if self.objetivo[1] > self.y_pos and self.turns[3]:
-                self.y_pos += self.velocidad
-            elif not self.turns[3]:
-                if self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-            elif self.turns[3]:
-                self.y_pos += self.velocidad
-        if self.x_pos < -30:
-            self.x_pos = 900
-        elif self.x_pos > 900:
-            self.x_pos - 30
-        return self.x_pos, self.y_pos, self.direccion
-
-    def move_rosa(self):
-        # r, l, u, d
-        # inky is going to turn left or right whenever advantageous, but only up or down on collision
-        if self.direccion == 0:
-            if self.objetivo[0] > self.x_pos and self.turns[0]:
-                self.x_pos += self.velocidad
-            elif not self.turns[0]:
-                if self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-            elif self.turns[0]:
-                self.x_pos += self.velocidad
-        elif self.direccion == 1:
-            if self.objetivo[1] > self.y_pos and self.turns[3]:
-                self.direccion = 3
-            elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                self.x_pos -= self.velocidad
-            elif not self.turns[1]:
-                if self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-            elif self.turns[1]:
-                self.x_pos -= self.velocidad
-        elif self.direccion == 2:
-            if self.objetivo[0] < self.x_pos and self.turns[1]:
-                self.direccion = 1
-                self.x_pos -= self.velocidad
-            elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                self.direccion = 2
-                self.y_pos -= self.velocidad
-            elif not self.turns[2]:
-                if self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.objetivo[1] > self.y_pos and self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.turns[3]:
-                    self.direccion = 3
-                    self.y_pos += self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-            elif self.turns[2]:
-                if self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                else:
-                    self.y_pos -= self.velocidad
-        elif self.direccion == 3:
-            if self.objetivo[1] > self.y_pos and self.turns[3]:
-                self.y_pos += self.velocidad
-            elif not self.turns[3]:
-                if self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.objetivo[1] < self.y_pos and self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[2]:
-                    self.direccion = 2
-                    self.y_pos -= self.velocidad
-                elif self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                elif self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-            elif self.turns[3]:
-                if self.objetivo[0] > self.x_pos and self.turns[0]:
-                    self.direccion = 0
-                    self.x_pos += self.velocidad
-                elif self.objetivo[0] < self.x_pos and self.turns[1]:
-                    self.direccion = 1
-                    self.x_pos -= self.velocidad
-                else:
-                    self.y_pos += self.velocidad
-        if self.x_pos < -30:
-            self.x_pos = 900
-        elif self.x_pos > 900:
-            self.x_pos - 30
-        return self.x_pos, self.y_pos, self.direccion
+    # def move_rosa(self):
+       
 
 
 def draw_misc():
@@ -682,6 +346,7 @@ while run:
     dibujar_mapa() # Dibuja el mapa del juego.
     center_x = pos_x + 10
     center_y = pos_y + 10
+    
     if powerup:
         fantasmas_velocidad = [1, 1, 1, 1] # Velocidades de los fantasmas durante el poder especial
     else:
@@ -725,19 +390,8 @@ while run:
     turns_allowed = revisar_posiciones(center_x, center_y)
     if moving:# Verifica las direcciones permitidas para el jugador basándose en la posición central del jugador.
         pos_x, pos_y = move_player(pos_x, pos_y)
-        if not rojo_muerto and not rojo.in_box:
-            rojo_x, rojo_y, rojo_direccion = rojo.move_rojo()
-        else:
-            rojo_x, rojo_y, rojo_direccion = rojo.move_naranja()
-        if not rosa_muerto and not rosa.in_box:
-            rosa_x, rosa_y, rosa_direccion = rosa.move_rosa()
-        else:
-            pinky_x, pinky_y, pinky_direction = rosa.move_naranja()
-        if not azul_muerto and not azul.in_box:
-            azul_x, azul_y, azul_direccion = azul.move_azul()
-        else:
-            azul_x, azul_y, azul_direccion = azul.move_naranja()
-        naranja_x, naranja_y, naranja_direccion = naranja.move_naranja()
+        
+        naranja_x, naranja_y = naranja.move_naranja()
     #Verifica colisiones del jugador y actualiza el puntaje, el estado de la "powerup" y el estado de los fantasmas comidos.    
     score, powerup, power_contador, come_fantasmas = revisar_collisions(score, powerup, power_contador, come_fantasmas)
     if not powerup:# Verifica colisiones del jugador con fantasmas y actualiza el estado del juego y puntaje en consecuencia.
@@ -986,6 +640,6 @@ while run:
         rosa_muerto = False
     if naranja.in_box and naranja_muerto:
         naranja_muerto= False
-    
+ 
     pygame.display.flip()
 pygame.quit()
