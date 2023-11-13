@@ -47,6 +47,8 @@ azul_img = pygame.transform.scale(pygame.image.load("azul.jpg"), (20,20))
 
 naranja_img = pygame.transform.scale(pygame.image.load("naranja.jpg"), (20,20))
 
+asustado_img = pygame.transform.scale(pygame.image.load("asustado.jpg"), (20,20))
+
 mi_fuente = pygame.font.SysFont("Pacifico", 36)
 font = pygame.font.Font('freesansbold.ttf', 20)
 
@@ -54,16 +56,16 @@ font = pygame.font.Font('freesansbold.ttf', 20)
 pos_x = 200 #Posiciones donde va a inicar pacman
 pos_y = 180
 #Posiciones de los fantasmas
-rojo_x = 900
-rojo_y = 350
+rojo_x = ((largo -25) // 36)*30
+rojo_y = ((ancho -560) //40)*25
 rojo_direccion = 0
-azul_x = 800
+azul_x = 450
 azul_y = 350
 azul_direccion = 2
-rosa_x = 850
+rosa_x = 550
 rosa_y = 350
 rosa_direccion = 2
-naranja_x = 700
+naranja_x = 500
 naranja_y = 350
 naranja_direccion = 2
 
@@ -384,7 +386,7 @@ pacman= Pacman()
 class Ghost():  # Estas son las caracteristicas que comparten los fantasmas;
     # x_coord y y_coord son las coordenadas de los fantasmas, objetivo es a quien buscan, img sus imagenes
     # direcc su direccion, box es para saber si se encuentran en la parte de la caja, id es para identificar a cada fantasma por separado
-    def __init__(self, x_coord, y_coord, objetivo, velocidad, img, direcc, muerto, box, id, x_pos, y_pos, max_pasos):
+    def __init__(self, x_coord, y_coord, objetivo, velocidad, img, direcc, muerto, box, id):
         self.x_pos = x_coord
         self.y_pos = y_coord
         self.center_x = self.x_pos + 10  # Para ajustar el centro de la imagen
@@ -398,26 +400,25 @@ class Ghost():  # Estas son las caracteristicas que comparten los fantasmas;
         self.id = id
         self.rect = self.dibuja()  # Hitbox de los fantasmas para revisar en colisiones
         self.turns = [False, False, False, False]
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.max_pasos = max_pasos
         self.contador_pasos = 0
         self.direccion_actual = random.choice([0, 1, 2, 3])
 
-    def dibuja(self):  # Condiciones de los estados de los fantasmas
-        # Fantasmas en su estado normal
-        if (not powerup and not self.muerto) or (come_fantasmas[self.id] and powerup and not self.muerto):
-            ventana.blit(self.img, (self.x_pos, self.y_pos))
-        # Fantasmas en estado asustado sino esta muertos
-        elif powerup and not self.muerto and not come_fantasmas[self.id]:
-            ventana.blit(asustado_img, (self.x_pos, self.y_pos))
-        # Fantasmas muertos
-        else:
-            ventana.blit(muerto_img, (self.x_pos, self.y_pos))
-        fantasma_rect = pygame.rect.Rect((self.center_x - 18, self.center_y - 18), (
-        36, 36))  # hitbox para colisiones con los fantasmas, es un simple rectangulo para verificar las colisiones
-        return fantasma_rect
+    def dibuja(self):
+        if pygame.display.get_init():  # Verifica si la ventana está inicializada
+            # Fantasmas en su estado normal
+            if (not powerup and not self.muerto) or (come_fantasmas[self.id] and powerup and not self.muerto):
+                ventana.blit(self.img, (self.x_pos, self.y_pos))
+            # Fantasmas en estado asustado sino están muertos
+            elif powerup and not self.muerto and not come_fantasmas[self.id]:
+                ventana.blit(asustado_img, (self.x_pos, self.y_pos))
+            # Fantasmas muertos
+            else:
+                ventana.blit(muerto_img, (self.x_pos, self.y_pos))
+            fantasma_rect = pygame.rect.Rect((self.center_x - 18, self.center_y - 18), (
+                36,
+                36))  # hitbox para colisiones con los fantasmas, es un simple rectángulo para verificar las colisiones
 
+            return fantasma_rect
     def revisar_colisiones(self, x_coord, y_coord):
         # Verificar si la posición siguiente está dentro de los límites de la matriz
         if 0 <= x_coord < len(niv1.get_matriz()[0]) and 0 <= y_coord < len(niv1.get_matriz()):
@@ -532,17 +533,17 @@ def draw_misc():
 
 # INSTANCIAS FANTASMAS
 
-#rojo = Ghost(rojo_x, rojo_y, targets[0], fantasmas_velocidad[0], rojo_img, rojo_direccion, rojo_muerto,
- #                    blinky_box, 0)
-#
- #       azul = Ghost(azul_x, azul_y, targets[1], fantasmas_velocidad[1], azul_img, azul_direccion, azul_muerto,
-  #                   inky_box, 1)
+Rojo = Ghost(rojo_x, rojo_y, targets[0], fantasmas_velocidad[0], rojo_img, rojo_direccion, rojo_muerto,
+                    blinky_box, 0)
 
-   #     rosita = Ghost(rosa_x, rosa_y, targets[2], fantasmas_velocidad[2], rosa_img, rosa_direccion, rosa_muerto,
-    #                   pinky_box, 2)
+Azul = Ghost(azul_x, azul_y, targets[1], fantasmas_velocidad[1], azul_img, azul_direccion, azul_muerto,
+                    inky_box, 1)
 
-     #   naranja = Ghost(naranja_x, naranja_y, targets[3], fantasmas_velocidad[3], naranja_img, naranja_direccion,
-      #                  naranja_muerto, clyde_box, 3)
+rosita = Ghost(rosa_x, rosa_y, targets[2], fantasmas_velocidad[2], rosa_img, rosa_direccion, rosa_muerto,
+                     pinky_box, 2)
+
+Naranja = Ghost(naranja_x, naranja_y, targets[3], fantasmas_velocidad[3], naranja_img, naranja_direccion,
+                      naranja_muerto, clyde_box, 3)
 
 
 # ......................... VENTANAS -------------
@@ -562,13 +563,13 @@ def jugar():
         pacman.mover_pacman()
         # Inicializa a los fantasmas con sus respectivas posiciones, velocidades y estados.
 
-   #     rojo.dibuja()
+        Rojo.dibuja()
 
-  #      azul.dibuja()
+        Azul.dibuja()
 
- #       rosita.dibuja()
+        rosita.dibuja()
 
-#        naranja.dibuja()
+        Naranja.dibuja()
 
 
         mostrar_texto(ventana, get_font(45), str(niv1.get_score()), blanco, 1000, 110)
@@ -838,5 +839,6 @@ def mostrar_matriz(matriz):
                 superficie.blit(texto, (x, y))
 
 menu_principal()
+
 
 
